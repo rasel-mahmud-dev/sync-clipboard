@@ -62,7 +62,12 @@ class MainActivity : ComponentActivity() {
                     composable("login") { entry ->
 //                        val text = entry.savedStateHandle.get<String>("my_text")
                         LoginScreen(navController)
+
+                    }
+                    composable("registration") { entry ->
+//                        val text = entry.savedStateHandle.get<String>("my_text")
                         RegistrationScreen(navController)
+
                     }
                 }
 

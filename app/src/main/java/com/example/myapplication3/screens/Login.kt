@@ -1,5 +1,6 @@
 package com.example.myapplication3.screens
 
+import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -20,22 +21,48 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-
+import com.example.myapplication3.firebase.FirestoreInstance
 
 
 @Composable
 fun LoginScreen(navHost: NavHostController) {
-    var email by remember { mutableStateOf(TextFieldValue("")) }
-    var password by remember { mutableStateOf(TextFieldValue("")) }
+    var email by remember { mutableStateOf(TextFieldValue("rasel.mahmud.dev@gmail.com")) }
+    var password by remember { mutableStateOf(TextFieldValue("123")) }
     var passwordVisible by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
-    fun handleLogin(){
+    val firestore = FirestoreInstance.getInstance
+
+
+    fun handleLogin() {
         if (email.text.isEmpty() || password.text.isEmpty()) {
             Toast.makeText(context, "All fields are required.", Toast.LENGTH_SHORT).show()
             return
         }
 
+        val userData = hashMapOf(
+            "email" to email.text,
+            "password" to password.text
+        )
+
+        firestore.collection("users")
+            .document(email.text)
+            .get()
+            .addOnSuccessListener { documentSnapshot ->
+                if (!documentSnapshot.exists()) {
+                    Toast.makeText(context, "User not found.", Toast.LENGTH_SHORT).show()
+                    return@addOnSuccessListener
+                }
+
+                Log.d("TAG", "handleLogin: ")
+                println(documentSnapshot.data)
+                navHost.navigate("Login")
+
+            }
+            .addOnFailureListener { e ->
+                Log.d("error", e.toString())
+                Toast.makeText(context, "Error logging in.", Toast.LENGTH_SHORT).show()
+            }
 
     }
 
@@ -52,7 +79,7 @@ fun LoginScreen(navHost: NavHostController) {
                 .padding(16.dp)
         ) {
             Text(
-                text = "Hello There!",
+                text = "Login",
                 fontSize = 30.sp,
                 fontWeight = FontWeight.Bold,
                 color = Color.Black
@@ -123,7 +150,7 @@ fun LoginScreen(navHost: NavHostController) {
                 fontSize = 14.sp
             )
 
-            TextButton(onClick = { navHost.navigate("Registration") }) {
+            TextButton(onClick = { navHost.navigate("registration") }) {
                 Text(text = "Register", color = Color(0xFFFF5252))
             }
         }
