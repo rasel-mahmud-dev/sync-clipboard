@@ -1,14 +1,10 @@
 package com.example.myapplication3
 
-import android.content.Intent
-import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -20,10 +16,34 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.example.myapplication3.firebase.FirestoreInstance
+import com.example.myapplication3.screens.LoginScreen
+import com.example.myapplication3.screens.RegistrationScreen
 
 class MainActivity : ComponentActivity() {
 
+    val firestore = FirestoreInstance.getInstance
+    val messagesCollection = firestore.collection("messages")
 
+    val messageData = mapOf(
+        "sender" to "sender_id",
+        "recipient" to "recipient_id",
+        "timestamp" to System.currentTimeMillis(),
+        "content" to "This is a message"
+    )
+
+    private fun sendMessage() {
+        messagesCollection.add(messageData)
+            .addOnSuccessListener { documentReference ->
+                Log.d("Firestore", "Document written with ID: ${documentReference.id}")
+            }
+            .addOnFailureListener { e ->
+                Log.e("Firestore", "Error writing document: ${e.message}")
+            }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,11 +51,30 @@ class MainActivity : ComponentActivity() {
         setContent {
             Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                 innerPadding
+
+                val navController = rememberNavController()
+//                LoadAuthInfo()
+
+                NavHost(
+                    navController = navController,
+                    startDestination = "login"
+                ) {
+                    composable("login") { entry ->
+//                        val text = entry.savedStateHandle.get<String>("my_text")
+                        LoginScreen(navController)
+                        RegistrationScreen(navController)
+                    }
+                }
+
                 Column {
                     Text("Clipboard monitoring service is off.")
                     CopyableText("Clipboard monitoring service is off copyu.")
                     Button(onClick = { startClipboardService() }) {
                         Text("Start Clipboard Service")
+                    }
+
+                    Button(onClick = { sendMessage() }) {
+                        Text("Send message on firebase")
                     }
                 }
             }
@@ -43,9 +82,9 @@ class MainActivity : ComponentActivity() {
     }
 
     private fun startClipboardService() {
-        val serviceIntent = Intent(this, ClipboardMonitorService::class.java)
-        Log.d("sd", "sdf")
-        startForegroundService(serviceIntent)
+//        val serviceIntent = Intent(this, ClipboardMonitorService::class.java)
+//        Log.d("sd", "sdf")
+//        startForegroundService(serviceIntent)
     }
 }
 
@@ -66,3 +105,20 @@ fun CopyableText(text: String) {
         )
     }
 }
+
+//@Composable
+//fun LoadAuthInfo() {
+//    val context = LocalContext.current
+//
+//    LaunchedEffect(Unit) {
+//        withContext(Dispatchers.IO) {
+//            val authUser = AuthPreferences.getAuthUser(context)
+//            if (authUser != null) {
+//                GlobalAuthState.authUser = authUser
+//            } else {
+////                GlobalAuthState.authUser = authUser
+////                print("Please login...")
+//            }
+//        }
+//    }
+//}
