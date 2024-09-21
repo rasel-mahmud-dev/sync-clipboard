@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.example.myapplication3.firebase.FirestoreInstance
+import com.example.myapplication3.state.AuthState
 
 
 @Composable
@@ -40,11 +41,6 @@ fun LoginScreen(navHost: NavHostController) {
             return
         }
 
-        val userData = hashMapOf(
-            "email" to email.text,
-            "password" to password.text
-        )
-
         firestore.collection("users")
             .document(email.text)
             .get()
@@ -55,9 +51,16 @@ fun LoginScreen(navHost: NavHostController) {
                 }
 
                 Log.d("TAG", "handleLogin: ")
-                println(documentSnapshot.data)
-                navHost.navigate("Login")
+                val email = documentSnapshot.data?.get("email").toString()
+                val username = documentSnapshot.data?.get("username").toString()
 
+                AuthState.setAuthInfo(
+                    email,
+                    username,
+                    context
+                )
+
+                navHost.navigate("clip")
             }
             .addOnFailureListener { e ->
                 Log.d("error", e.toString())
