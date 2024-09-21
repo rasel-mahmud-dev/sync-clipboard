@@ -7,6 +7,7 @@ import androidx.navigation.compose.composable
 import com.example.myapplication3.screens.ClipListScreen
 import com.example.myapplication3.screens.LoginScreen
 import com.example.myapplication3.screens.RegistrationScreen
+import com.example.myapplication3.screens.SettingsScreen
 
 object Routes {
     @Composable
@@ -25,6 +26,10 @@ object Routes {
 
             composable("registration") { entry ->
                 RegistrationScreen(navController)
+            }
+
+            composable("settings") { entry ->
+                SettingsScreen(navController)
             }
         }
     }
