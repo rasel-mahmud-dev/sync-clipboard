@@ -19,7 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 
-class YourReceivingActivity : ComponentActivity() {
+class GetShareActivity : ComponentActivity() {
     private var receivedLink: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {

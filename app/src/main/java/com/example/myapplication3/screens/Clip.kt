@@ -1,6 +1,7 @@
 package com.example.myapplication3.screens
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -8,7 +9,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.ClickableText
-import androidx.compose.foundation.text.input.rememberTextFieldState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material.icons.filled.Settings
@@ -25,9 +25,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
+import com.example.myapplication3.firebase.FirestoreInstance
 import com.example.myapplication3.state.AuthState
-import java.sql.Date
-import java.sql.Time
+import com.example.myapplication3.state.Clip
+import com.example.myapplication3.state.ClipboardState
+import java.util.Date
 
 data class MenuItem(
     val id: Int,
@@ -133,18 +135,70 @@ fun AppBar(context: Context, navController: NavController) {
 
 @Composable
 fun ClipListScreen(navController: NavHostController) {
-    val s = java.util.Date()
+    val date = Date()
 
-    val text = remember {
-        mutableStateOf(s.time.toString())
+    val context = LocalContext.current
+    val firestore = FirestoreInstance.getInstance
+    val clipsCollection = firestore.collection("clips")
+    val text = remember { mutableStateOf(date.time.toString()) }
+
+    LaunchedEffect(Unit) {
+        clipsCollection.get()
+            .addOnSuccessListener { querySnapshot ->
+                val clipList = querySnapshot.documents.mapNotNull { document ->
+                    document.toObject(Clip::class.java)
+                }
+                ClipboardState.setClipboardInfo(clipList, context)
+            }
+            .addOnFailureListener { e ->
+                println("Error getting documents: $e")
+
+            }
+
     }
 
     fun handleAddText() {
+        val clipData = hashMapOf(
+            "userId" to "userId1", // Replace with actual user ID
+            "content" to "This is a clipboard content.", // Replace with actual clipboard content
+            "timestamp" to System.currentTimeMillis(),
+            "sharedWith" to listOf("linux_pc", "windows pc") // Replace with actual shared devices
+        )
 
+        // Add data to Firestore
+        clipsCollection.add(clipData)
+            .addOnSuccessListener { documentReference ->
+                // After adding, fetch the document data
+                documentReference.get()
+                    .addOnSuccessListener { documentSnapshot ->
+                        if (documentSnapshot.exists()) {
+                            val content = documentSnapshot.getString("content") ?: ""
+                            val userId = documentSnapshot.getString("userId") ?: ""
+                            val timestamp = documentSnapshot.getLong("timestamp") ?: 0L
+                            val sharedWith =
+                                documentSnapshot.get("sharedWith") as? List<String> ?: emptyList()
+
+                            // Set the clipboard info globally and persist it
+//                            ClipboardState.setClipboardInfo(
+//                                content,
+//                                userId,
+//                                timestamp,
+//                                sharedWith,
+//                                context
+//                            )
+                        }
+                    }
+                    .addOnFailureListener { e ->
+                        println("Failed to retrieve document: $e")
+                    }
+            }
+            .addOnFailureListener { e ->
+                println("Error adding document: $e")
+            }
     }
 
 
-    val context = LocalContext.current
+
     Scaffold(
         topBar = {
             AppBar(context, navController)
@@ -199,7 +253,7 @@ fun ClipListScreen(navController: NavHostController) {
                         .background(MaterialTheme.colorScheme.primary)
                         .padding(16.dp)
                 ) {
-                    items(clipItems) { clip ->
+                    items(ClipboardState.clips) { clip ->
                         ClipCard(clipItem = clip)
                     }
                 }
@@ -211,7 +265,7 @@ fun ClipListScreen(navController: NavHostController) {
 }
 
 @Composable
-fun ClipCard(clipItem: ClipItem) {
+fun ClipCard(clipItem: Clip) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
@@ -233,7 +287,7 @@ fun ClipCard(clipItem: ClipItem) {
 
             when (clipItem.type) {
 //                "Image" -> ImageCard(imageUrl = clipItem.content)
-                "Text" -> TextCard(text = clipItem.content)
+                "Text" -> TextCard(text = clipItem.clipContent)
             }
         }
     }
