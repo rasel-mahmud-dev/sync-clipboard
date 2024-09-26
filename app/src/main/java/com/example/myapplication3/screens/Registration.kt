@@ -199,7 +199,7 @@ fun RegistrationScreen(navHost: NavHostController) {
                 fontSize = 14.sp
             )
 
-            TextButton(onClick = { navHost.navigate("registration") }) {
+            TextButton(onClick = { navHost.navigate("login") }) {
                 Text(text = "Login", color = Color(0xFFFF5252))
             }
         }
