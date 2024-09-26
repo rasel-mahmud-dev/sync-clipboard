@@ -22,7 +22,7 @@
 
 <!--        <service android:name=".ClipboardMonitorService" />-->
 
-        <activity android:name=".YourReceivingActivity"
+        <activity android:name=".GetShareActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
