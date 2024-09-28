@@ -1,5 +1,7 @@
 package com.example.myapplication3
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -24,6 +26,10 @@ class MainActivity : ComponentActivity() {
     val firestore = FirestoreInstance.getInstance
     val messagesCollection = firestore.collection("messages")
 
+    companion object {
+        lateinit var prefs: SharedPreferences
+    }
+
     val messageData = mapOf(
         "sender" to "sender_id",
         "recipient" to "recipient_id",
@@ -43,7 +49,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
+        prefs = getSharedPreferences("auth_prefs", Context.MODE_PRIVATE)
         setContent {
             Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                 innerPadding
@@ -53,8 +59,8 @@ class MainActivity : ComponentActivity() {
                 Routes.init(navController = navController)
 
                 // Load auth info from SharedPreferences when the app starts
-                val isLogged = AuthState.loadFromPreferences(this)
-                if (isLogged) navController.navigate("clip")
+//                val isLogged = AuthState.loadFromPreferences(this)
+//                if (isLogged) navController.navigate("clip")
 
 //                Column {
 //                    Text("Clipboard monitoring service is off.")

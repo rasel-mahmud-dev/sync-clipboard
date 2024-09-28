@@ -66,7 +66,7 @@ fun AppBar(context: Context, navController: NavController) {
             label = "Logout",
             icon = { Icon(Icons.Default.ExitToApp, contentDescription = null) }, // Example icon
             onClick = {
-                AuthState.clearAuthInfo(context)
+                AuthState.clearAuthInfo()
                 navController.navigate("login")
             }
         )
@@ -80,7 +80,7 @@ fun AppBar(context: Context, navController: NavController) {
         navigationIcon = {
             IconButton(onClick = { showMenu = !showMenu }) {
                 Text(
-                    AuthState?.username?.substring(0, 2).toString().uppercase(),
+                    AuthState.auth?.username?.substring(0, 2).toString().uppercase(),
                     fontWeight = FontWeight.Bold,
                     color = Color.White
                 )
